@@ -2963,41 +2963,40 @@ socket.on('updateGlobalStats', (stats) => {
     if (!fileInput.files[0]) return alert("Select an MP3 file first.");
 
     const file = fileInput.files[0];
-    status.innerText = `⏳ Sending ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)...`;
+    status.innerText = "⏳ Connecting to Nexus Cloud...";
     btn.disabled = true;
 
     const formData = new FormData();
     formData.append('audio', file);
 
     try {
-        const response = await fetch('/api/upload-music', {
+        // !!! CHANGE THE URL BELOW TO YOUR REAL RENDER BACKEND URL !!!
+        const BACKEND_URL = "https://fluxion-fc-backend.onrender.com"; 
+
+        const response = await fetch(`${BACKEND_URL}/api/upload-music`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            mode: 'cors' // Ensure CORS mode is on
         });
 
-        // Check if the server rejected the size
         if (response.status === 413) {
-            status.innerText = "❌ Error: File is too large for the server.";
+            status.innerText = "❌ File too large for Render Free Tier.";
             return;
         }
 
         const result = await response.json();
-
         if (result.success) {
-            status.innerText = "✅ Track Live!";
+            status.innerText = "✅ Upload Successful!";
             fileInput.value = "";
-        } else {
-            status.innerText = "❌ Upload Failed: " + (result.error || "Unknown Error");
         }
     } catch (err) {
-        // This is where "Network Error" comes from
-        status.innerText = "❌ Connection Timeout or Network Error.";
-        console.error("DETAILED ERROR:", err);
-        alert("Upload interrupted. Try a smaller file or a faster internet connection.");
+        status.innerText = "❌ Network Interrupted. Render might be sleeping.";
+        console.error(err);
+        alert("Upload failed. Try a smaller file (< 4MB) or wait 30 seconds and try again.");
     } finally {
         btn.disabled = false;
     }
-        }
+}
                 
             </script>
     <!-- IMAGE ZOOM MODAL -->
