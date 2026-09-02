@@ -1313,6 +1313,10 @@ function startApp() {
         initPriceChart([]); // Initialize empty if no history
         }
         updateAssignDropdowns();
+        const customTracks = data.customMusic || [];
+    // Ensure defaultPlaylist is defined at the top of your script
+    bgPlaylist = shuffleArray([...rawPlaylist, ...customTracks]);
+    if (!bgAudio.src || bgAudio.src === "") loadPlaylistSong(0);
     });
 
     socket.on('updatePlayers', (p) => { 
@@ -2954,13 +2958,10 @@ socket.on('updateGlobalStats', (stats) => {
         async function uploadAdminMusic() {
     const fileInput = document.getElementById('adminMusicFile');
     const status = document.getElementById('uploadStatus');
-    const btn = document.getElementById('uploadMusicBtn');
-
-    if (!fileInput.files[0]) return alert("Select an MP3 file first.");
-
-    status.innerText = "⏳ Uploading to Nexus Core...";
-    btn.disabled = true;
-    btn.style.opacity = "0.5";
+    
+    if (!fileInput.files[0]) return alert("Please select a file.");
+    
+    status.innerText = "⏳ Transferring to Nexus Cloud...";
 
     const formData = new FormData();
     formData.append('audio', fileInput.files[0]);
@@ -2968,26 +2969,23 @@ socket.on('updateGlobalStats', (stats) => {
     try {
         const response = await fetch('/api/upload-music', {
             method: 'POST',
-            body: formData
+            body: formData, 
+            // NOTE: No headers here!
         });
+
         const result = await response.json();
 
         if (result.success) {
-            status.innerText = "✅ Track Synchronized!";
+            status.innerText = "✅ Upload Successful!";
             fileInput.value = "";
+        } else {
+            status.innerText = "❌ Server Error: " + (result.error || "Unknown");
         }
     } catch (err) {
-        status.innerText = "❌ Upload Failed.";
-    } finally {
-        btn.disabled = false;
-        btn.style.opacity = "1";
+        status.innerText = "❌ Network Error. Check connection.";
+        console.error(err);
     }
         }
-        socket.on('newTrackAdded', (url) => {
-    // Add to the current session's playlist
-    bgPlaylist.push(url);
-    console.log("🎵 Radio: New track received and added to loop.");
-});
                 
             </script>
     <!-- IMAGE ZOOM MODAL -->
