@@ -2958,32 +2958,44 @@ socket.on('updateGlobalStats', (stats) => {
         async function uploadAdminMusic() {
     const fileInput = document.getElementById('adminMusicFile');
     const status = document.getElementById('uploadStatus');
-    
-    if (!fileInput.files[0]) return alert("Please select a file.");
-    
-    status.innerText = "⏳ Transferring to Nexus Cloud...";
+    const btn = document.getElementById('uploadMusicBtn');
+
+    if (!fileInput.files[0]) return alert("Select an MP3 file first.");
+
+    const file = fileInput.files[0];
+    status.innerText = `⏳ Sending ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)...`;
+    btn.disabled = true;
 
     const formData = new FormData();
-    formData.append('audio', fileInput.files[0]);
+    formData.append('audio', file);
 
     try {
         const response = await fetch('/api/upload-music', {
             method: 'POST',
-            body: formData, 
-            // NOTE: No headers here!
+            body: formData
         });
+
+        // Check if the server rejected the size
+        if (response.status === 413) {
+            status.innerText = "❌ Error: File is too large for the server.";
+            return;
+        }
 
         const result = await response.json();
 
         if (result.success) {
-            status.innerText = "✅ Upload Successful!";
+            status.innerText = "✅ Track Live!";
             fileInput.value = "";
         } else {
-            status.innerText = "❌ Server Error: " + (result.error || "Unknown");
+            status.innerText = "❌ Upload Failed: " + (result.error || "Unknown Error");
         }
     } catch (err) {
-        status.innerText = "❌ Network Error. Check connection.";
-        console.error(err);
+        // This is where "Network Error" comes from
+        status.innerText = "❌ Connection Timeout or Network Error.";
+        console.error("DETAILED ERROR:", err);
+        alert("Upload interrupted. Try a smaller file or a faster internet connection.");
+    } finally {
+        btn.disabled = false;
     }
         }
                 
