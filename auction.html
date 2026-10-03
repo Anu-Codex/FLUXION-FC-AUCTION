@@ -1926,7 +1926,6 @@ function toggleMusic() {
         bgAudio.addEventListener('ended', function() {
     currentPlaylistIndex++;
     loadPlaylistSong(currentPlaylistIndex);
-    if (activeMode === 'normal') bgAudio.play();
 });
 
 // Skip broken links
