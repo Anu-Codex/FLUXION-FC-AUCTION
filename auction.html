@@ -1868,11 +1868,11 @@ function loadPlaylistSong(index) {
     }
     
     const currentUrl = bgPlaylist[currentPlaylistIndex];
-    showDebugToast(`🎵 Song ${currentPlaylistIndex + 1} of ${bgPlaylist.length}\nURL: ${currentUrl}`);
+    showDebugToast(`🎵 Ready (${currentPlaylistIndex + 1}/${bgPlaylist.length})\nTap Sound Button to Play`);
     
     bgAudio.src = currentUrl;
-    bgAudio.load();
-        }
+    bgAudio.load(); // Just loads the file into memory, doesn't play yet
+}
 
 function switchTrack(newMode) {
     activeMode = newMode;
@@ -1930,16 +1930,25 @@ bgAudio.addEventListener('error', function(e) {
 // 1. UPDATED START AUDIO (Forces unmuted & 100% volume)
 function startAuctionAudio() {
     bgAudio.muted = false;
-    bgAudio.volume = 1.0; // Set to full volume
+    bgAudio.volume = 1.0;
     
-    loadPlaylistSong(currentPlaylistIndex);
-    switchTrack('normal'); 
+    if (!bgAudio.src || bgAudio.src === "") {
+        loadPlaylistSong(currentPlaylistIndex);
+    }
+    
+    // Now that the user clicked the button, the browser grants permission to play!
+    bgAudio.play().then(() => {
+        showDebugToast("🔊 Music Playing!");
+        const musicIcon = document.getElementById('musicIcon');
+        musicIcon.className = "fa-solid fa-volume-high";
+        musicIcon.style.color = "#00e5ff";
+    }).catch(e => {
+        handleAutoplayBlock();
+    });
     
     document.getElementById('volumePopup').classList.add('hidden');
     document.getElementById('musicToggle').classList.remove('hidden');
-    
-    showDebugToast("🔊 Audio Unmuted & Playing!");
-}
+        }
 
 // 2. UPDATED TOGGLE MUSIC
 function toggleMusic() {
