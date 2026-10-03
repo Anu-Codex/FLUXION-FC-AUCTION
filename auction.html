@@ -1850,14 +1850,16 @@ const allAudioElements = [bgAudio, tracks.intro, tracks.hype];
 // 4. FIXED LOAD FUNCTION (Preserves custom songs on loop)
 function loadPlaylistSong(index) {
     if (index >= bgPlaylist.length) {
-        // Keep raw playlist AND all custom database tracks when looping!
         bgPlaylist = shuffleArray([...rawPlaylist, ...savedCustomTracks]);
         currentPlaylistIndex = 0;
     }
-    console.log("Attempting to play:", bgPlaylist[currentPlaylistIndex]);
-    bgAudio.src = bgPlaylist[currentPlaylistIndex];
+    
+    const currentUrl = bgPlaylist[currentPlaylistIndex];
+    showDebugToast(`🎵 Song ${currentPlaylistIndex + 1} of ${bgPlaylist.length}\nURL: ${currentUrl}`);
+    
+    bgAudio.src = currentUrl;
     bgAudio.load();
-}
+        }
 
 function switchTrack(newMode) {
     activeMode = newMode;
@@ -1914,11 +1916,14 @@ function toggleMusic() {
 });
 
 // Skip broken links
-bgAudio.addEventListener('error', function() {
-    console.log("Link failed, skipping to next...");
+bgAudio.addEventListener('error', function(e) {
+    showDebugToast(`❌ Failed to load link (Skipping):\n${bgAudio.src}`);
+    
     currentPlaylistIndex++;
     loadPlaylistSong(currentPlaylistIndex);
-    if (activeMode === 'normal') bgAudio.play();
+    if (activeMode === 'normal') {
+        bgAudio.play().catch(err => showDebugToast("Autoplay blocked by browser"));
+    }
 });
 
 // Updated Start Audio function for the Volume Popup
@@ -2995,15 +3000,28 @@ socket.on('updateGlobalStats', (stats) => {
         }
 // Add this with your other socket listeners
 socket.on('newTrackAdded', (url) => {
-    savedCustomTracks.push(url); // Save to custom tracker
-    bgPlaylist.push(url);       // Push to active playlist
+    savedCustomTracks.push(url);
+    bgPlaylist.push(url);
+    showDebugToast(`✨ New track added successfully!\nTotal songs: ${bgPlaylist.length}`);
     
     if (!bgAudio.src || bgAudio.paused) {
         currentPlaylistIndex = bgPlaylist.length - 1;
         loadPlaylistSong(currentPlaylistIndex);
-        if (activeMode === 'normal') bgAudio.play().catch(e => console.log(e));
+        if (activeMode === 'normal') bgAudio.play().catch(e => showDebugToast("Autoplay blocked"));
     }
 });
+        function showDebugToast(msg) {
+    let toast = document.getElementById('debugToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'debugToast';
+        toast.style.cssText = 'position:fixed; bottom:80px; right:20px; background:rgba(0,0,0,0.9); color:#00e5ff; padding:12px 18px; border-radius:12px; font-size:11px; z-index:9999; border:1px solid #00e5ff; max-width:80%; word-break:break-all; box-shadow: 0 0 20px rgba(0,229,255,0.3);';
+        document.body.appendChild(toast);
+    }
+    toast.innerText = msg;
+    // Disappears after 6 seconds
+    setTimeout(() => { if(toast) toast.remove(); }, 6000); 
+        }
                 
             </script>
     <!-- IMAGE ZOOM MODAL -->
