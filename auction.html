@@ -1880,12 +1880,26 @@ function switchTrack(newMode) {
             loadPlaylistSong(currentPlaylistIndex);
         }
         bgAudio.volume = 0.2;
-        bgAudio.play().catch(e => console.log("Playback interaction required"));
+        bgAudio.play().catch(e => {
+            showDebugToast("⚠️ Autoplay blocked. Tap music icon bottom-right!");
+            const musicBtn = document.getElementById('musicToggle');
+            if (musicBtn) {
+                musicBtn.classList.remove('hidden');
+                musicBtn.classList.add('animate-bounce');
+            }
+        });
     } else {
         currentTrack.volume = 0.3;
-        currentTrack.play().catch(e => console.log("Playback interaction required"));
+        currentTrack.play().catch(e => {
+            showDebugToast("⚠️ Autoplay blocked. Tap music icon bottom-right!");
+            const musicBtn = document.getElementById('musicToggle');
+            if (musicBtn) {
+                musicBtn.classList.remove('hidden');
+                musicBtn.classList.add('animate-bounce');
+            }
+        });
     }
-}
+        }
         
 
 function stopAllMusic() {
