@@ -1832,23 +1832,26 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-let bgPlaylist = shuffleArray(rawPlaylist);
+// 3. GLOBAL VARIABLES FOR PLAYLIST
+let savedCustomTracks = []; // Stores database tracks so they don't get lost
+let bgPlaylist = shuffleArray([...rawPlaylist]);
 let currentPlaylistIndex = 0;
 let activeMode = 'normal';
 
 const bgAudio = document.getElementById('bgMusic');
-        const tracks = {
+const tracks = {
     normal: document.getElementById('bgMusic'),
     intro: document.getElementById('introMusic'),
     hype: document.getElementById('hypeMusic')
 };
 
-// Add all audio elements to a list for easy stopping
 const allAudioElements = [bgAudio, tracks.intro, tracks.hype];
 
+// 4. FIXED LOAD FUNCTION (Preserves custom songs on loop)
 function loadPlaylistSong(index) {
     if (index >= bgPlaylist.length) {
-        bgPlaylist = shuffleArray(rawPlaylist);
+        // Keep raw playlist AND all custom database tracks when looping!
+        bgPlaylist = shuffleArray([...rawPlaylist, ...savedCustomTracks]);
         currentPlaylistIndex = 0;
     }
     console.log("Attempting to play:", bgPlaylist[currentPlaylistIndex]);
@@ -2251,7 +2254,7 @@ socket.on('connect', () => {
 // 3. Update when initial data arrives (Update your existing initialData listener)
 socket.on('initialData', (data) => {
     updateMegaLoader(70, "Data Received");
-    
+
     currentPlayers = data.players;
     currentTeams = data.teams;
     renderPlayers(data.players);
@@ -2263,7 +2266,13 @@ socket.on('initialData', (data) => {
         document.getElementById('chatBox').innerHTML = ''; 
         data.chats.forEach(addChatMessage); 
     }
-    
+
+    // ⬇️ ADD THESE 4 LINES HERE ⬇️
+    savedCustomTracks = data.customMusic || [];
+    bgPlaylist = shuffleArray([...rawPlaylist, ...savedCustomTracks]);
+    if (!bgAudio.src || bgAudio.src === "") loadPlaylistSong(0);
+    // ⬆️ ----------------------- ⬆️
+
     // START THE ASSET CHECK HERE
     checkAssets();
     renderScarcityMap();
@@ -2984,18 +2993,16 @@ socket.on('updateGlobalStats', (stats) => {
         status.innerText = "";
     }, 4000);
         }
-        // Add this socket listener with your other socket.on listeners
+// Add this with your other socket listeners
 socket.on('newTrackAdded', (url) => {
-    // Push the new track to the active playlist array
-    bgPlaylist.push(url);
+    savedCustomTracks.push(url); // Save to custom tracker
+    bgPlaylist.push(url);       // Push to active playlist
     
-    // Optional: If music hasn't started or is waiting, load it
     if (!bgAudio.src || bgAudio.paused) {
         currentPlaylistIndex = bgPlaylist.length - 1;
         loadPlaylistSong(currentPlaylistIndex);
+        if (activeMode === 'normal') bgAudio.play().catch(e => console.log(e));
     }
-    
-    console.log("🎵 New radio track added to playlist in real-time:", url);
 });
                 
             </script>
