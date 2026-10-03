@@ -1905,20 +1905,7 @@ function stopAllMusic() {
     });
 }
 // --- FIXED MUTE TOGGLE ---
-function toggleMusic() {
-    const musicIcon = document.getElementById('musicIcon');
-    const currentTrack = tracks[activeMode] || bgAudio;
 
-    if (!currentTrack.paused) {
-        currentTrack.pause();
-        musicIcon.className = "fa-solid fa-volume-xmark";
-        musicIcon.style.color = "#ff4444";
-    } else {
-        currentTrack.play().catch(e => handleAutoplayBlock());
-        musicIcon.className = "fa-solid fa-volume-high";
-        musicIcon.style.color = "#00e5ff";
-    }
-}
 
         bgAudio.addEventListener('ended', function() {
     currentPlaylistIndex++;
@@ -1938,12 +1925,39 @@ bgAudio.addEventListener('error', function(e) {
     }
 });
 
-// Updated Start Audio function for the Volume Popup
+// 1. UPDATED START AUDIO (Forces unmuted & 100% volume)
 function startAuctionAudio() {
+    bgAudio.muted = false;
+    bgAudio.volume = 1.0; // Set to full volume
+    
     loadPlaylistSong(currentPlaylistIndex);
     switchTrack('normal'); 
+    
     document.getElementById('volumePopup').classList.add('hidden');
     document.getElementById('musicToggle').classList.remove('hidden');
+    
+    showDebugToast("🔊 Audio Unmuted & Playing!");
+}
+
+// 2. UPDATED TOGGLE MUSIC
+function toggleMusic() {
+    const musicIcon = document.getElementById('musicIcon');
+    const currentTrack = tracks[activeMode] || bgAudio;
+
+    currentTrack.muted = false; // Force unmute
+    currentTrack.volume = 1.0;  // Force full volume
+
+    if (!currentTrack.paused) {
+        currentTrack.pause();
+        musicIcon.className = "fa-solid fa-volume-xmark";
+        musicIcon.style.color = "#ff4444";
+        showDebugToast("🔇 Music Paused");
+    } else {
+        currentTrack.play().catch(e => handleAutoplayBlock());
+        musicIcon.className = "fa-solid fa-volume-high";
+        musicIcon.style.color = "#00e5ff";
+        showDebugToast("🔊 Music Playing");
+    }
 }
 
 // --- SFX DUCKING LOGIC (For Start/Sold Events) ---
