@@ -962,6 +962,9 @@ body {
         <button onclick="addCustomMusicLink()" class="w-full bg-purple-600 text-white font-black py-3 rounded-xl text-[10px] uppercase hover:bg-purple-500 transition-all shadow-lg shadow-purple-900/40 mt-2">
             Push Link to Background Loop
         </button>
+        <button onclick="clearAllMusicTracks()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 font-black py-3 rounded-xl text-[10px] uppercase transition-all mt-2">
+            🗑️ Clear All Custom Songs
+        </button>
         <p id="uploadStatus" class="text-[8px] text-center text-gray-600 uppercase mt-1"></p>
     </div>
                     </div>
@@ -3035,6 +3038,21 @@ socket.on('newTrackAdded', (url) => {
     // Disappears after 6 seconds
     setTimeout(() => { if(toast) toast.remove(); }, 6000); 
         }
+        // Triggered when admin clicks the clear button
+function clearAllMusicTracks() {
+    if (confirm("⚠️ Are you sure you want to delete ALL custom songs from the database?")) {
+        socket.emit('clearAllMusic');
+    }
+}
+
+// Listens for the clear broadcast from the server
+socket.on('musicCleared', () => {
+    savedCustomTracks = [];
+    bgPlaylist = shuffleArray([...rawPlaylist]);
+    currentPlaylistIndex = 0;
+    loadPlaylistSong(currentPlaylistIndex);
+    showDebugToast("🗑️ All custom songs cleared from database!");
+});
                 
             </script>
     <!-- IMAGE ZOOM MODAL -->
