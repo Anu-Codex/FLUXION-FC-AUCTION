@@ -628,6 +628,52 @@
                         <p id="csvStatus" class="text-[9px] text-gray-400 font-bold uppercase"></p>
                     </div>
                 </div>
+                <!-- WHATSAPP FAST PARSER PANEL -->
+<div id="adminWhatsappParser" class="hidden premium-glass rounded-[2rem] p-6 border border-emerald-500/30 space-y-4">
+    <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold uppercase text-white flex items-center gap-2">
+            <i class="fa-brands fa-whatsapp text-emerald-400 text-lg"></i> Fast WhatsApp Importer
+        </h3>
+        <span class="text-[9px] uppercase tracking-widest text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Auto-Extract</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Text Area for WhatsApp Message -->
+        <div>
+            <label class="text-[9px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">Paste WhatsApp Registration Text</label>
+            <textarea id="waRawText" rows="6" placeholder="Paste the forwarded WhatsApp message here..." class="w-full bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-400"></textarea>
+        </div>
+
+        <!-- Preview & Image Upload -->
+        <div class="space-y-3">
+            <div>
+                <label class="text-[9px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">Upload Attached Profile Screenshot</label>
+                <input id="waImgFile" type="file" accept="image/*" class="w-full bg-gray-900 border border-white/10 p-2 rounded-xl text-xs text-white">
+            </div>
+
+            <!-- Auto-Calculated Defaults -->
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[8px] uppercase font-bold text-gray-400 tracking-wider">Card Tier</label>
+                    <select id="waCardType" class="w-full bg-gray-900 border border-white/10 p-2 rounded-lg text-xs text-white">
+                        <option value="EPIC">EPIC</option>
+                        <option value="BIG TIME">BIG TIME</option>
+                        <option value="SHOWTIME">SHOWTIME</option>
+                        <option value="HIGHLIGHT">HIGHLIGHT</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[8px] uppercase font-bold text-gray-400 tracking-wider">Base Value (M)</label>
+                    <input id="waBaseValue" type="number" value="10" class="w-full bg-gray-900 border border-white/10 p-2 rounded-lg text-xs text-white">
+                </div>
+            </div>
+
+            <button type="button" onclick="parseAndAddWhatsAppPlayer()" class="w-full bg-gradient-to-r from-emerald-500 to-cyan-400 hover:from-emerald-400 hover:to-cyan-300 text-black font-black py-3 rounded-xl uppercase text-xs btn-premium flex items-center justify-center gap-2">
+                <i class="fa-solid fa-bolt"></i> Parse & Deploy Player
+            </button>
+        </div>
+    </div>
+</div>
 
                 <div class="flex gap-4">
                     <button id="showcaseBtn" onclick="toggleSlideshow()" class="hidden flex-1 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-black text-xs uppercase">Showcase Unsold</button>
@@ -811,6 +857,7 @@
                 document.getElementById('adminBonusPanel').classList.remove('hidden');
                 document.getElementById('adminUserManagement').classList.remove('hidden');
                 document.getElementById('adminTeamManagement').classList.remove('hidden');
+                document.getElementById('adminWhatsappParser').classList.remove('hidden');
                 document.getElementById('adminDirectAssignPanel').classList.remove('hidden');
                 document.getElementById('adminRadioPanel').classList.remove('hidden');
                 document.getElementById('showcaseBtn').classList.remove('hidden');
@@ -1416,6 +1463,73 @@ socket.on('musicClearedSuccess', (msg) => {
     currentPlaylistIndex = 0;
     loadPlaylistSong(currentPlaylistIndex);
 });
+        // Function to extract text using Regular Expressions
+function parseWhatsAppMessage(rawText) {
+    // Matches text inside brackets or directly after labels
+    const nameMatch = rawText.match(/NAME\s*[\r\n]+[—\-_* ]*\[?([A-Za-z0-9 _\-]+)\]?/i) || rawText.match(/\[([A-Za-z0-9 _\-]+)\]/);
+    const phoneMatch = rawText.match(/CONTACT\s*[\r\n]+[—\-_* ]*\[?\+?([0-9\s\-]+)\]?/i) || rawText.match(/\+?([0-9]{9,15})/);
+    const rankMatch = rawText.match(/RANKING\s*[\r\n]+[—\-_* ]*\[?([0-9]+)\]?/i);
+
+    const name = nameMatch ? nameMatch[1].replace(/[\[\]]/g, '').trim() : "";
+    const phone = phoneMatch ? phoneMatch[1].replace(/[^0-9]/g, '').trim() : "";
+    const ranking = rankMatch ? parseInt(rankMatch[1].trim(), 10) : 0;
+
+    // Optional: Determine strength/rating from ranking
+    // For example: Rank < 5000 -> 3150 rating, Rank < 20000 -> 3100, etc.
+    let rating = 3000;
+    if (ranking > 0 && ranking <= 5000) rating = 3150;
+    else if (ranking > 5000 && ranking <= 20000) rating = 3100;
+    else if (ranking > 20000) rating = 3050;
+
+    return { name, phone, ranking, rating };
+}
+
+async function parseAndAddWhatsAppPlayer() {
+    const rawText = document.getElementById('waRawText').value.trim();
+    const file = document.getElementById('waImgFile').files[0];
+    const cardType = document.getElementById('waCardType').value;
+    const baseValue = Number(document.getElementById('waBaseValue').value) || 10;
+
+    if (!rawText) return alert("Please paste the WhatsApp text message.");
+
+    const parsed = parseWhatsAppMessage(rawText);
+
+    if (!parsed.name) {
+        return alert("Could not extract Player Name. Please make sure the format matches.");
+    }
+
+    let uploadedUrl = "";
+    if (file) {
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading Image...`;
+        btn.disabled = true;
+
+        uploadedUrl = await uploadToImgBB(file);
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (!uploadedUrl) return alert("Failed to upload the image to ImgBB.");
+    }
+
+    const payload = {
+        name: parsed.name,
+        strength: parsed.rating,
+        cardType: cardType,
+        baseValue: baseValue,
+        phone: parsed.phone,
+        ranking: parsed.ranking,
+        imageUrl: uploadedUrl
+    };
+
+    socket.emit('addPlayer', payload);
+    alert(`✅ Legend "${parsed.name}" (Rating: ${parsed.rating}, Contact: +${parsed.phone}) added successfully!`);
+
+    // Reset inputs
+    document.getElementById('waRawText').value = '';
+    document.getElementById('waImgFile').value = '';
+}
     </script>
 </body>
 </html>
