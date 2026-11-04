@@ -531,77 +531,79 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- ================= RESTORED ADMIN FEATURES ================= -->
+                <!-- ================= TAB 6: ADMIN NEXUS (ADMINS ONLY) ================= -->
+            <div id="tab-admin" class="tab-content space-y-6">
+                <div class="text-center mb-6">
+                    <span class="text-red-400 font-black tracking-[0.4em] text-[9px] uppercase">Control Matrix</span>
+                    <h2 class="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white">ADMIN <span class="text-red-500">NEXUS</span></h2>
+                </div>
 
-                <!-- 1. Nexus Radio Control -->
-                <div id="adminRadioPanel" class="hidden premium-glass p-6 rounded-[2rem] border border-purple-500/20 space-y-4">
-                    <h3 class="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-radio text-purple-400"></i> Nexus Radio Management
-                    </h3>
-                    <div class="flex gap-2">
-                        <button onclick="confirmClearMusic()" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded-lg text-[9px] uppercase font-bold transition">
-            <i class="fa-solid fa-trash-can"></i> Clear All Tracks
-                        </button>
-                        <input id="musicUrlInput" type="text" placeholder="Paste MP3/Catbox Link..." class="flex-1 bg-gray-900 border border-white/10 p-3 rounded-xl text-[10px] text-white outline-none focus:border-purple-500">
-                        <button onclick="injectMusic()" class="bg-purple-600 text-white font-black px-6 rounded-xl text-[10px] uppercase hover:bg-purple-500 transition-all">Inject Track</button>
+                <!-- 1. WhatsApp Fast Importer -->
+                <div id="adminWhatsappParser" class="premium-glass rounded-[2rem] p-6 border border-emerald-500/30 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold uppercase text-white flex items-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-emerald-400 text-lg"></i> WhatsApp Registration Importer
+                        </h3>
+                        <span class="text-[9px] uppercase tracking-widest text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Auto-Extract</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[9px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">Paste WhatsApp Text</label>
+                            <textarea id="waRawText" rows="5" placeholder="Paste forwarded registration text..." class="w-full bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none focus:border-emerald-400"></textarea>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">Attached Screenshot</label>
+                                <input id="waImgFile" type="file" accept="image/*" class="w-full bg-gray-900 border border-white/10 p-2 rounded-xl text-xs text-white">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="waCardType" class="bg-gray-900 border border-white/10 p-2 rounded-lg text-xs text-white">
+                                    <option value="EPIC">EPIC</option><option value="BIG TIME">BIG TIME</option><option value="SHOWTIME">SHOWTIME</option><option value="HIGHLIGHT">HIGHLIGHT</option>
+                                </select>
+                                <input id="waBaseValue" type="number" value="10" placeholder="Base (M)" class="bg-gray-900 border border-white/10 p-2 rounded-lg text-xs text-white">
+                            </div>
+                            <button type="button" onclick="parseAndAddWhatsAppPlayer()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black py-3 rounded-xl uppercase text-xs btn-premium flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-bolt"></i> Deploy Player From WhatsApp
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2. Direct Squad Registration -->
-                <div id="adminDirectAssignPanel" class="hidden premium-glass rounded-[2rem] p-6 border border-green-500/20 space-y-4">
+                <!-- 2. Manual Player Registration -->
+                <div id="adminPlayerForm" class="premium-glass rounded-[2rem] p-6 border border-cyan-500/20 space-y-4">
+                    <h3 class="text-sm font-bold uppercase text-white flex items-center gap-2"><i class="fa-solid fa-plus-circle text-cyan-400"></i> Register New Legend (Manual)</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <input id="pName" type="text" placeholder="Name" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <input id="pStrength" type="number" placeholder="Rating" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <select id="pType" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                            <option>BIG TIME</option><option>EPIC</option><option>SHOWTIME</option><option>HIGHLIGHT</option>
+                        </select>
+                        <input id="pBase" type="number" placeholder="Base (M)" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <input id="pPhone" type="text" placeholder="Phone No" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <div class="col-span-2">
+                            <input id="pImgFile" type="file" accept="image/*" class="w-full bg-gray-900 border border-white/10 p-2 rounded-xl text-xs text-white">
+                        </div>
+                    </div>
+                    <button onclick="addPlayer()" class="w-full ef-gradient text-black font-black py-3 rounded-xl btn-premium uppercase text-xs">Deploy to Roster</button>
+                </div>
+
+                <!-- 3. Direct Squad Assignment -->
+                <div id="adminDirectAssignPanel" class="premium-glass rounded-[2rem] p-6 border border-green-500/20 space-y-4">
                     <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-file-signature text-green-400"></i> Direct Squad Registration
+                        <i class="fa-solid fa-file-signature text-green-400"></i> Direct Squad Registration (Bypass Auction)
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <select id="assignPlayerSelect" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
                         <select id="assignTeamSelect" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
                         <input id="assignValueInput" type="number" placeholder="Value (e.g. 50)" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
                     </div>
-                    <button onclick="handleForceAssign()" class="w-full bg-green-500 hover:bg-green-400 text-black font-black py-3 rounded-xl uppercase text-xs transition-all">Confirm Direct Assignment (Bypass Auction)</button>
+                    <button onclick="handleForceAssign()" class="w-full bg-green-500 hover:bg-green-400 text-black font-black py-3 rounded-xl uppercase text-xs">Confirm Assignment</button>
                 </div>
 
-                <!-- 3. Danger Zone Resets -->
-                <div class="premium-glass p-6 rounded-[2rem] border border-red-500/20 space-y-4">
-                    <h4 class="text-red-500 font-black text-[10px] uppercase tracking-[0.3em]">Danger Zone</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <button onclick="triggerMegaReset()" class="bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/30 py-3 rounded-xl font-black uppercase text-[10px] transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-skull-crossbones"></i> Erase All Data & Start Fresh
-                        </button>
-                        <button onclick="triggerClearPlayers()" class="bg-orange-600/10 hover:bg-orange-600 text-orange-500 hover:text-white border border-orange-500/30 py-3 rounded-xl font-black uppercase text-[10px] transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-users-slash"></i> Clear Only Player Roster
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 4. Login Management Table -->
-                <div id="adminUserManagement" class="hidden premium-glass rounded-[2rem] p-6 border border-cyan-500/20 space-y-4">
-                    <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-user-shield text-cyan-400"></i> Login Management
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-                        <input id="uEmail" type="email" placeholder="Official Email" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
-                        <input id="uPass" type="password" placeholder="Password" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
-                        <input id="uTeam" type="text" placeholder="Team/Name" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
-                        <input id="uBudget" type="number" placeholder="Budget (M)" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
-                        <select id="uRole" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
-                            <option value="captain">Captain</option>
-                            <option value="admin">Secondary Admin</option>
-                        </select>
-                    </div>
-                    <button onclick="addUser()" class="w-full ef-gradient text-black font-black py-3 rounded-xl uppercase text-xs">Create Authorized User</button>
-                    <div class="overflow-x-auto mt-4">
-                        <table class="w-full text-left text-xs uppercase font-bold text-gray-400">
-                            <thead class="bg-black/40">
-                                <tr><th class="p-3">Email</th><th class="p-3">Identity/Team</th><th class="p-3">Role</th><th class="p-3">Action</th></tr>
-                            </thead>
-                            <tbody id="userListDisplay" class="divide-y divide-white/5"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- 5. Franchise Management & CSV Import -->
-                <div id="adminTeamManagement" class="hidden premium-glass rounded-[2rem] p-6 border border-yellow-500/20 space-y-4">
+                <!-- 4. Franchise & Bulk CSV Management -->
+                <div id="adminTeamManagement" class="premium-glass rounded-[2rem] p-6 border border-yellow-500/20 space-y-4">
                     <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
                         <i class="fa-solid fa-shield-halved text-yellow-400"></i> Franchise Management
                     </h3>
@@ -618,62 +620,75 @@
                             <tbody id="teamManagementDisplay" class="divide-y divide-white/5"></tbody>
                         </table>
                     </div>
-
-                    <div class="mt-6 pt-4 border-t border-white/10 space-y-3">
+                    <div class="pt-4 border-t border-white/10 space-y-3">
                         <h4 class="text-xs font-black text-cyan-400 uppercase tracking-widest"><i class="fa-solid fa-file-csv"></i> Bulk CSV Registration</h4>
                         <div class="flex flex-col md:flex-row gap-3">
                             <input type="file" id="csvFileInput" accept=".csv" class="flex-1 bg-gray-900 border border-white/10 p-2 rounded-xl text-xs text-white">
-                            <button onclick="uploadCsvRoster()" class="bg-green-500 text-black font-black px-6 py-2.5 rounded-xl uppercase text-[10px]">Sync Registration Data</button>
+                            <button onclick="uploadCsvRoster()" class="bg-green-500 text-black font-black px-6 py-2.5 rounded-xl uppercase text-[10px]">Sync CSV</button>
                         </div>
-                        <p id="csvStatus" class="text-[9px] text-gray-400 font-bold uppercase"></p>
                     </div>
                 </div>
-                <!-- WHATSAPP FAST PARSER PANEL -->
-<div id="adminWhatsappParser" class="hidden premium-glass rounded-[2rem] p-6 border border-emerald-500/30 space-y-4">
-    <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold uppercase text-white flex items-center gap-2">
-            <i class="fa-brands fa-whatsapp text-emerald-400 text-lg"></i> Fast WhatsApp Importer
-        </h3>
-        <span class="text-[9px] uppercase tracking-widest text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Auto-Extract</span>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Text Area for WhatsApp Message -->
-        <div>
-            <label class="text-[9px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">Paste WhatsApp Registration Text</label>
-            <textarea id="waRawText" rows="6" placeholder="Paste the forwarded WhatsApp message here..." class="w-full bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-400"></textarea>
-        </div>
-
-        <!-- Preview & Image Upload -->
-        <div class="space-y-3">
-            <div>
-                <label class="text-[9px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">Upload Attached Profile Screenshot</label>
-                <input id="waImgFile" type="file" accept="image/*" class="w-full bg-gray-900 border border-white/10 p-2 rounded-xl text-xs text-white">
-            </div>
-
-            <!-- Auto-Calculated Defaults -->
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="text-[8px] uppercase font-bold text-gray-400 tracking-wider">Card Tier</label>
-                    <select id="waCardType" class="w-full bg-gray-900 border border-white/10 p-2 rounded-lg text-xs text-white">
-                        <option value="EPIC">EPIC</option>
-                        <option value="BIG TIME">BIG TIME</option>
-                        <option value="SHOWTIME">SHOWTIME</option>
-                        <option value="HIGHLIGHT">HIGHLIGHT</option>
-                    </select>
+                <!-- 5. Login Account Management -->
+                <div id="adminUserManagement" class="premium-glass rounded-[2rem] p-6 border border-cyan-500/20 space-y-4">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-cyan-400"></i> Login Credential Management
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                        <input id="uEmail" type="email" placeholder="Official Email" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <input id="uPass" type="password" placeholder="Password" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <input id="uTeam" type="text" placeholder="Team/Name" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <input id="uBudget" type="number" placeholder="Budget (M)" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                        <select id="uRole" class="bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white">
+                            <option value="captain">Captain</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button onclick="addUser()" class="w-full ef-gradient text-black font-black py-3 rounded-xl uppercase text-xs">Create User</button>
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-left text-xs uppercase font-bold text-gray-400">
+                            <thead class="bg-black/40">
+                                <tr><th class="p-3">Email</th><th class="p-3">Team/Name</th><th class="p-3">Role</th><th class="p-3">Action</th></tr>
+                            </thead>
+                            <tbody id="userListDisplay" class="divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-[8px] uppercase font-bold text-gray-400 tracking-wider">Base Value (M)</label>
-                    <input id="waBaseValue" type="number" value="10" class="w-full bg-gray-900 border border-white/10 p-2 rounded-lg text-xs text-white">
+
+                <!-- 6. Nexus Radio -->
+                <div id="adminRadioPanel" class="premium-glass p-6 rounded-[2rem] border border-purple-500/20 space-y-4">
+                    <h3 class="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-radio text-purple-400"></i> Radio Audio Injection
+                    </h3>
+                    <div class="flex gap-2">
+                        <input id="musicUrlInput" type="text" placeholder="Paste MP3/Catbox Link..." class="flex-1 bg-gray-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none">
+                        <button onclick="injectMusic()" class="bg-purple-600 text-white font-black px-6 rounded-xl text-[10px] uppercase">Inject</button>
+                    </div>
+                </div>
+
+                <!-- 7. DANGER ZONE -->
+                <div id="adminDangerZone" class="premium-glass p-6 rounded-[2rem] border-2 border-red-500/40 bg-red-950/20 space-y-4">
+                    <h4 class="text-red-400 font-black text-xs uppercase tracking-[0.3em] flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500 animate-pulse text-base"></i> Restricted Admin Danger Zone
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button onclick="triggerMegaReset()" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/40 py-3 rounded-xl font-black uppercase text-[10px] transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-skull-crossbones"></i> Erase All Data & Start Fresh
+                        </button>
+                        <button onclick="triggerClearPlayers()" class="bg-orange-600/20 hover:bg-orange-600 text-orange-400 hover:text-white border border-orange-500/40 py-3 rounded-xl font-black uppercase text-[10px] transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-users-slash"></i> Clear Only Player Roster
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-white/5">
+                        <button onclick="confirmClearMusic()" class="bg-purple-900/30 hover:bg-purple-700 text-purple-300 hover:text-white border border-purple-500/30 py-2.5 rounded-xl font-black uppercase text-[10px] transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-trash-can"></i> Clear All Radio Tracks
+                        </button>
+                        <button id="showcaseBtn" onclick="toggleSlideshow()" class="bg-gray-800 hover:bg-purple-600 text-white border border-white/10 py-2.5 rounded-xl font-black text-[10px] uppercase transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-tv"></i> Toggle Unsold Showcase
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            <button type="button" onclick="parseAndAddWhatsAppPlayer()" class="w-full bg-gradient-to-r from-emerald-500 to-cyan-400 hover:from-emerald-400 hover:to-cyan-300 text-black font-black py-3 rounded-xl uppercase text-xs btn-premium flex items-center justify-center gap-2">
-                <i class="fa-solid fa-bolt"></i> Parse & Deploy Player
-            </button>
-        </div>
-    </div>
-</div>
 
                 <div class="flex gap-4">
                     <button id="showcaseBtn" onclick="toggleSlideshow()" class="hidden flex-1 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-black text-xs uppercase">Showcase Unsold</button>
@@ -845,25 +860,59 @@
         function logout() { localStorage.removeItem('nexus_user'); location.reload(); }
 
         function startApp() {
-            if(!user) return;
-            document.getElementById('authOverlay').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('userName').innerText = user.name;
-            document.getElementById('userRole').innerText = user.role;
-            
-            if(user.role === 'admin') {
-                document.getElementById('adminControls').classList.remove('hidden');
-                document.getElementById('adminPlayerForm').classList.remove('hidden');
-                document.getElementById('adminBonusPanel').classList.remove('hidden');
-                document.getElementById('adminUserManagement').classList.remove('hidden');
-                document.getElementById('adminTeamManagement').classList.remove('hidden');
-                document.getElementById('adminWhatsappParser').classList.remove('hidden');
-                document.getElementById('adminDirectAssignPanel').classList.remove('hidden');
-                document.getElementById('adminRadioPanel').classList.remove('hidden');
-                document.getElementById('showcaseBtn').classList.remove('hidden');
-                socket.emit('getAuthorizedUsers');
-            }
-            initPriceChart();
+    if(!user) return;
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('userName').innerText = user.name;
+    document.getElementById('userRole').innerText = user.role;
+
+    const adminPanels = [
+        'adminControls',
+        'adminPlayerForm',
+        'adminBonusPanel',
+        'adminUserManagement',
+        'adminTeamManagement',
+        'adminWhatsappParser',
+        'adminDirectAssignPanel',
+        'adminRadioPanel',
+        'adminDangerZone',
+        'showcaseBtn'
+    ];
+
+    const navAdmin = document.getElementById('nav-admin');
+    const navBar = document.getElementById('bottomNavBar');
+
+    if(user.role === 'admin') {
+        // 1. Show all admin elements
+        adminPanels.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.remove('hidden');
+        });
+
+        // 2. Expand navigation bar to 6 columns & show Admin Tab
+        if(navBar) {
+            navBar.classList.remove('grid-cols-5');
+            navBar.classList.add('grid-cols-6');
+        }
+        if(navAdmin) navAdmin.classList.remove('hidden');
+
+        socket.emit('getAuthorizedUsers');
+    } else {
+        // 1. Force hide all admin elements for guests and captains
+        adminPanels.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        });
+
+        // 2. Keep navigation bar at 5 columns & hide Admin Tab completely
+        if(navBar) {
+            navBar.classList.remove('grid-cols-6');
+            navBar.classList.add('grid-cols-5');
+        }
+        if(navAdmin) navAdmin.classList.add('hidden');
+    }
+
+    initPriceChart();
         }
 
         
