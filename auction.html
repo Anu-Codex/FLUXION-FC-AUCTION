@@ -1517,24 +1517,28 @@ socket.on('musicClearedSuccess', (msg) => {
     loadPlaylistSong(currentPlaylistIndex);
 });
         // Function to extract text using Regular Expressions
+// Function to extract text using Regular Expressions
 function parseWhatsAppMessage(rawText) {
-    // Matches text inside brackets or directly after labels
-    const nameMatch = rawText.match(/NAME\s*[\r\n]+[—\-_* ]*\[?([A-Za-z0-9 _\-]+)\]?/i) || rawText.match(/\[([A-Za-z0-9 _\-]+)\]/);
-    const phoneMatch = rawText.match(/CONTACT\s*[\r\n]+[—\-_* ]*\[?\+?([0-9\s\-]+)\]?/i) || rawText.match(/\+?([0-9]{9,15})/);
-    const rankMatch = rawText.match(/RANKING\s*[\r\n]+[—\-_* ]*\[?([0-9]+)\]?/i);
+    // 1. Extract Name: Matches [MONSTRID] after NAME
+    const nameMatch = rawText.match(/NAME\s*[\r\n]+[—\-_* ]*\[?([A-Za-z0-9 _\-]+)\]?/i) 
+                   || rawText.match(/NAME\s*[:\-]?\s*\[?([A-Za-z0-9 _\-]+)\]?/i);
+
+    // 2. Extract Contact / Phone: Matches [+27652618652] after CONTACT
+    const phoneMatch = rawText.match(/CONTACT\s*[\r\n]+[—\-_* ]*\[?\+?([0-9\s\-]+)\]?/i) 
+                    || rawText.match(/CONTACT\s*[:\-]?\s*\[?\+?([0-9\s\-]+)\]?/i)
+                    || rawText.match(/\+?([0-9]{9,15})/);
+
+    // 3. Extract Rating / Strength / Ranking: Matches [13519] or [3120] after RATING, STRENGTH, or RANKING
+    const ratingMatch = rawText.match(/(?:RATING|STRENGTH|RANKING|RANK)\s*[\r\n]+[—\-_* ]*\[?([0-9,]+)\]?/i)
+                     || rawText.match(/(?:RATING|STRENGTH|RANKING|RANK)\s*[:\-]?\s*\[?([0-9,]+)\]?/i);
 
     const name = nameMatch ? nameMatch[1].replace(/[\[\]]/g, '').trim() : "";
     const phone = phoneMatch ? phoneMatch[1].replace(/[^0-9]/g, '').trim() : "";
-    const ranking = rankMatch ? parseInt(rankMatch[1].trim(), 10) : 0;
+    
+    // Read the exact number without any formula or estimation
+    const rating = ratingMatch ? parseInt(ratingMatch[1].replace(/,/g, '').trim(), 10) : 0;
 
-    // Optional: Determine strength/rating from ranking
-    // For example: Rank < 5000 -> 3150 rating, Rank < 20000 -> 3100, etc.
-    let rating = "";
-    if (ranking > 0 && ranking <= 5000) rating = 3150;
-    else if (ranking > 5000 && ranking <= 20000) rating = 3100;
-    else if (ranking > 20000) rating = 3050;
-
-    return { name, phone, ranking, rating };
+    return { name, phone, rating };
 }
 
 async function parseAndAddWhatsAppPlayer() {
@@ -1548,36 +1552,30 @@ async function parseAndAddWhatsAppPlayer() {
     const parsed = parseWhatsAppMessage(rawText);
 
     if (!parsed.name) {
-        return alert("Could not extract Player Name. Please make sure the format matches.");
+        return alert("Could not extract Player Name. Please make sure the format matches [NAME].");
+    }
+
+    if (!parsed.rating || parsed.rating === 0) {
+        return alert("Could not extract Rating/Strength from the message. Please check the text.");
     }
 
     let uploadedUrl = "";
     if (file) {
-        const btn = event.currentTarget;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading Image...`;
-        btn.disabled = true;
-
         uploadedUrl = await uploadToImgBB(file);
-        
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-
         if (!uploadedUrl) return alert("Failed to upload the image to ImgBB.");
     }
 
     const payload = {
         name: parsed.name,
-        strength: parsed.rating,
+        strength: parsed.rating, // ⭐ Takes the exact number from your WhatsApp message
         cardType: cardType,
         baseValue: baseValue,
         phone: parsed.phone,
-        ranking: parsed.ranking,
         imageUrl: uploadedUrl
     };
 
     socket.emit('addPlayer', payload);
-    alert(`✅ Legend "${parsed.name}" (Rating: ${parsed.rating}, Contact: +${parsed.phone}) added successfully!`);
+    alert(`✅ Legend "${parsed.name}" registered with Rating: ${parsed.rating}!`);
 
     // Reset inputs
     document.getElementById('waRawText').value = '';
