@@ -1519,24 +1519,20 @@ socket.on('musicClearedSuccess', (msg) => {
         // Function to extract text using Regular Expressions
 // Function to extract text using Regular Expressions
 function parseWhatsAppMessage(rawText) {
-    // 1. Extract Name: Matches [MONSTRID] after NAME
-    const nameMatch = rawText.match(/NAME\s*[\r\n]+[—\-_* ]*\[?([A-Za-z0-9 _\-]+)\]?/i) 
-                   || rawText.match(/NAME\s*[:\-]?\s*\[?([A-Za-z0-9 _\-]+)\]?/i);
+    // 1. Extract NAME: searches for NAME (with or without * or emojis), follows down to [...]
+    const nameMatch = rawText.match(/NAME[\s\S]*?\[(.*?)\]/i);
 
-    // 2. Extract Contact / Phone: Matches [+27652618652] after CONTACT
-    const phoneMatch = rawText.match(/CONTACT\s*[\r\n]+[—\-_* ]*\[?\+?([0-9\s\-]+)\]?/i) 
-                    || rawText.match(/CONTACT\s*[:\-]?\s*\[?\+?([0-9\s\-]+)\]?/i)
-                    || rawText.match(/\+?([0-9]{9,15})/);
+    // 2. Extract CONTACT: searches for CONTACT, follows down to [...]
+    const phoneMatch = rawText.match(/CONTACT[\s\S]*?\[(.*?)\]/i);
 
-    // 3. Extract Rating / Strength / Ranking: Matches [13519] or [3120] after RATING, STRENGTH, or RANKING
-    const ratingMatch = rawText.match(/(?:RATING|STRENGTH|RANKING|RANK)\s*[\r\n]+[—\-_* ]*\[?([0-9,]+)\]?/i)
-                     || rawText.match(/(?:RATING|STRENGTH|RANKING|RANK)\s*[:\-]?\s*\[?([0-9,]+)\]?/i);
+    // 3. Extract RATING / RANKING: searches for RANKING or RATING, follows down to [...]
+    const ratingMatch = rawText.match(/(?:RANKING|RATING|STRENGTH|RANK)[\s\S]*?\[(.*?)\]/i);
 
-    const name = nameMatch ? nameMatch[1].replace(/[\[\]]/g, '').trim() : "";
+    const name = nameMatch ? nameMatch[1].trim() : "";
     const phone = phoneMatch ? phoneMatch[1].replace(/[^0-9]/g, '').trim() : "";
-    
-    // Read the exact number without any formula or estimation
-    const rating = ratingMatch ? parseInt(ratingMatch[1].replace(/,/g, '').trim(), 10) : 0;
+    const rating = ratingMatch ? parseInt(ratingMatch[1].replace(/[^0-9]/g, '').trim(), 10) : 0;
+
+    console.log("Parsed result:", { name, phone, rating });
 
     return { name, phone, rating };
 }
