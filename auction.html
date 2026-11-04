@@ -719,6 +719,10 @@
                 <i class="fa-solid fa-comments text-base"></i>
                 <span class="text-[9px] font-black uppercase tracking-widest">Chat</span>
             </button>
+            <button onclick="switchTab('admin')" id="nav-admin" class="tab-item flex flex-col items-center justify-center gap-1">
+                <i class="fa-solid fa-comments text-base"></i>
+                <span class="text-[9px] font-black uppercase tracking-widest">Admin</span>
+            </button>
         </nav>
     </div>
 
@@ -1525,7 +1529,7 @@ function parseWhatsAppMessage(rawText) {
 
     // Optional: Determine strength/rating from ranking
     // For example: Rank < 5000 -> 3150 rating, Rank < 20000 -> 3100, etc.
-    let rating = 3000;
+    let rating = "";
     if (ranking > 0 && ranking <= 5000) rating = 3150;
     else if (ranking > 5000 && ranking <= 20000) rating = 3100;
     else if (ranking > 20000) rating = 3050;
