@@ -1091,11 +1091,21 @@
                         <button onclick="bid(1)" class="bg-gray-800 text-white p-4 rounded-2xl font-black text-lg ${isHighest ? 'opacity-20' : ''}">+1M</button>
                         <button onclick="bid(5)" class="bg-cyan-400 text-black p-4 rounded-2xl font-black text-lg ${isHighest ? 'opacity-20' : ''}">+5M</button>
                         <button onclick="bid(10)" class="bg-cyan-400 text-black p-4 rounded-2xl font-black text-lg ${isHighest ? 'opacity-20' : ''}">+10M</button>
+                        <button onclick="skipAuctionRound()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-forward-step"></i> Skip This Round
+                        </button>
                     </div>` : ''}
                 </div>`;
         }
 
         function bid(inc) { if(user && user.role === 'captain') socket.emit('placeBid', { teamName: user.name, increment: inc }); }
+        function skipAuctionRound() {
+    if (user && user.role === 'captain') {
+        if (confirm("Are you sure you want to pass and skip bidding for this player?")) {
+            socket.emit('skipRound', { teamName: user.name });
+        }
+    }
+        }
         
         function filterPlayers() {
             const term = document.getElementById('playerSearchInput').value.toLowerCase();
