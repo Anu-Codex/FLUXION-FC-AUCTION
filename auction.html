@@ -1571,28 +1571,43 @@ function parseWhatsAppMessage(rawText) {
 }
 // 1. Request backup creation from server
 function requestBackupDownload() {
-    if (user && user.role === 'admin') {
-        socket.emit('requestDatabaseBackup');
+    if (!user || user.role !== 'admin') {
+        return alert("⚠️ Only authorized Admins can download backups.");
     }
+
+    console.log("Requesting backup from server...");
+    // Pass the admin's email so the server can verify credentials directly
+    socket.emit('requestDatabaseBackup', { email: user.email });
 }
 
-// 2. Browser receives backup JSON and automatically triggers file download
+// Ensure the download listener handles both mobile and desktop browsers:
 socket.on('downloadBackupData', (backupObj) => {
-    const jsonStr = JSON.stringify(backupObj, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    a.href = url;
-    a.download = `FLUXION_FC_BACKUP_${timestamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+        const jsonStr = JSON.stringify(backupObj, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = `FLUXION_FC_BACKUP_${timestamp}.json`;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
 
-    alert("✅ Snapshot downloaded successfully! Store this file safely.");
+        alert("✅ Backup downloaded successfully!");
+    } catch (err) {
+        alert("Download error: " + err.message);
+    }
 });
+
+// 2. Browser receives backup JSON and automatically triggers file download
+
 
 // 3. Read uploaded backup file and send to server
 function processBackupRestore(input) {
