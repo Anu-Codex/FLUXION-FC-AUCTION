@@ -1121,7 +1121,20 @@
                 </div>`;
         }
 
-        function bid(inc) { if(user && user.role === 'captain') socket.emit('placeBid', { teamName: user.name, increment: inc }); }
+        function bid(inc) {
+    if (!user) {
+        return alert("Please log in as a Captain to bid.");
+    }
+    if (user.role !== 'captain' && user.role !== 'admin') {
+        return alert("Only Franchise Captains are allowed to place bids.");
+    }
+    
+    console.log(`Submitting bid: +${inc}M for team "${user.name}"`);
+    socket.emit('placeBid', { 
+        teamName: user.name, 
+        increment: Number(inc) 
+    });
+        }
         function skipAuctionRound() {
     if (user && user.role === 'captain') {
         if (confirm("Are you sure you want to pass and skip bidding for this player?")) {
@@ -1219,6 +1232,13 @@
                 </tr>
             `).join('');
         });
+        socket.on('connect', () => {
+    console.log("Connected to socket server.");
+    if (user && user.email) {
+        // Automatically re-binds Captain role to the socket session
+        socket.emit('reauthenticateSession', { email: user.email, role: user.role });
+    }
+});
 
         function handleAddTeam() {
             const name = document.getElementById('tName').value.trim();
