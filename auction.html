@@ -665,6 +665,29 @@
                         <button onclick="injectMusic()" class="bg-purple-600 text-white font-black px-6 rounded-xl text-[10px] uppercase">Inject</button>
                     </div>
                 </div>
+                <!-- BACKUP & RECOVERY SYSTEM -->
+<div class="premium-glass p-6 rounded-[2rem] border border-cyan-500/30 space-y-4">
+    <div class="flex items-center justify-between">
+        <h3 class="text-xs font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+            <i class="fa-solid fa-floppy-disk text-cyan-400 text-sm"></i> Snapshot & Emergency Recovery
+        </h3>
+        <span class="text-[9px] uppercase font-bold text-gray-400">Total System Protection</span>
+    </div>
+    <p class="text-gray-400 text-xs">Download a full JSON image of all players, squads, purses, history, and user accounts. You can restore this file anytime if data is lost.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+        <!-- Download Backup Button -->
+        <button onclick="requestBackupDownload()" class="bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black border border-cyan-500/40 py-3 rounded-xl font-black uppercase text-[10px] transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-down text-base"></i> Export & Download Backup (.JSON)
+        </button>
+
+        <!-- Restore Backup Button -->
+        <label class="bg-yellow-500/20 hover:bg-yellow-500 text-yellow-400 hover:text-black border border-yellow-500/40 py-3 rounded-xl font-black uppercase text-[10px] transition flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-cloud-arrow-up text-base"></i> Restore From File (.JSON)
+            <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="processBackupRestore(this)">
+        </label>
+    </div>
+</div>
 
                 <!-- 7. DANGER ZONE -->
                 <div id="adminDangerZone" class="premium-glass p-6 rounded-[2rem] border-2 border-red-500/40 bg-red-950/20 space-y-4">
@@ -1546,7 +1569,62 @@ function parseWhatsAppMessage(rawText) {
 
     return { name, phone, rating };
 }
+// 1. Request backup creation from server
+function requestBackupDownload() {
+    if (user && user.role === 'admin') {
+        socket.emit('requestDatabaseBackup');
+    }
+}
 
+// 2. Browser receives backup JSON and automatically triggers file download
+socket.on('downloadBackupData', (backupObj) => {
+    const jsonStr = JSON.stringify(backupObj, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    a.href = url;
+    a.download = `FLUXION_FC_BACKUP_${timestamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert("✅ Snapshot downloaded successfully! Store this file safely.");
+});
+
+// 3. Read uploaded backup file and send to server
+function processBackupRestore(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+
+    const confirm1 = confirm("⚠️ WARNING: Restoring from a backup will OVERWRITE the current live database with the snapshot. Are you sure?");
+    if (!confirm1) {
+        input.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const parsedData = JSON.parse(e.target.result);
+            if (!parsedData.data || !parsedData.data.players) {
+                return alert("❌ Invalid backup file format.");
+            }
+            socket.emit('restoreDatabaseFromBackup', parsedData);
+        } catch (err) {
+            alert("❌ Failed to parse JSON file: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+    input.value = ''; // Reset input
+}
+
+socket.on('restoreCompleteSuccess', (msg) => {
+    alert("🎉 " + msg);
+    location.reload(); // Refresh page to re-render clean state
+});
 async function parseAndAddWhatsAppPlayer() {
     const rawText = document.getElementById('waRawText').value.trim();
     const file = document.getElementById('waImgFile').files[0];
