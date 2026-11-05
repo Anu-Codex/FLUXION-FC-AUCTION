@@ -1576,33 +1576,42 @@ function requestBackupDownload() {
     }
 
     console.log("Requesting backup from server...");
-    // Pass the admin's email so the server can verify credentials directly
     socket.emit('requestDatabaseBackup', { email: user.email });
 }
 
-// Ensure the download listener handles both mobile and desktop browsers:
+// 2. Mobile-Friendly Download Handler
 socket.on('downloadBackupData', (backupObj) => {
     try {
+        console.log("📦 Backup payload received from server:", backupObj);
+
         const jsonStr = JSON.stringify(backupObj, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        a.href = url;
-        a.download = `FLUXION_FC_BACKUP_${timestamp}.json`;
-        
+        const fileName = `FLUXION_FC_BACKUP_${timestamp}.json`;
+
+        // Method 1: Data URI (Most reliable on mobile browsers like Chrome Mobile/MIUI)
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(jsonStr);
+
+        const a = document.createElement('a');
+        a.setAttribute('href', dataUri);
+        a.setAttribute('download', fileName);
+        a.setAttribute('target', '_blank');
+        a.style.display = 'none';
+
         document.body.appendChild(a);
         a.click();
-        
+
+        // Give mobile OS time to register the download before cleaning up
         setTimeout(() => {
             document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
+        }, 1500);
 
-        alert("✅ Backup downloaded successfully!");
+        alert("✅ Backup download triggered! Check your notifications or Downloads folder.");
     } catch (err) {
-        alert("Download error: " + err.message);
+        console.error("Download Error:", err);
+        // Fallback for strict browser sandboxes: Opens JSON directly in a new tab so you can copy/save
+        const fallbackBlob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
+        const fallbackUrl = URL.createObjectURL(fallbackBlob);
+        window.open(fallbackUrl, '_blank');
     }
 });
 
