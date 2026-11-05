@@ -1500,7 +1500,7 @@ socket.on('initialData', (data) => {
     if(typeof checkAssets === 'function') checkAssets();
     
     // 8. Finalize Loader
-    setTimeout(() => updateMegaLoader(100, "Ready for Action"), 500);
+    updateMegaLoader(100, "Ready for Action");
 });
 
 // --- DYNAMIC RADIO TRACK SYNCHRONIZER ---
@@ -1640,6 +1640,8 @@ socket.on('restoreCompleteSuccess', (msg) => {
     alert("🎉 " + msg);
     location.reload(); // Refresh page to re-render clean state
 });
+        // FAIL-SAFE: Ensure loader always disappears
+
 async function parseAndAddWhatsAppPlayer() {
     const rawText = document.getElementById('waRawText').value.trim();
     const file = document.getElementById('waImgFile').files[0];
@@ -1680,6 +1682,12 @@ async function parseAndAddWhatsAppPlayer() {
     document.getElementById('waRawText').value = '';
     document.getElementById('waImgFile').value = '';
 }
+        setTimeout(() => {
+    const loader = document.getElementById('megaLoader');
+    if (loader && !loader.classList.contains('opacity-0')) {
+        updateMegaLoader(100, "Ready");
+    }
+}, 2000);
     </script>
 </body>
 </html>
